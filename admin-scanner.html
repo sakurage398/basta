@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin QR Scanner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Jockey+One&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('img/library_bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .top-bar {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 12px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-logo {
+            height: 70px;
+            margin-right: 15px;
+        }
+
+        .header-title {
+            height: 90px;
+        }
+
+        .nav-link {
+            color: #2c3e50 !important;
+            font-weight: 500;
+            padding: 8px 15px !important;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .content-row {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .scanner-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            overflow: hidden;
+            height: 550px;
+            border-left: 5px solid #28a745;
+            position: relative;
+
+        }
+
+        .info-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow: hidden;
+            height: 550px;
+        }
+
+        .user-info-card {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-left: 5px solid #3498db;
+            position: relative;
+        }
+
+        .user-info-card::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 0;
+            height: 100%;
+            width: 5px;
+            background: linear-gradient(180deg, #3498db, #2980b9);
+            border-radius: 5px 0 0 5px;
+        }
+
+        .scanner-column::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 0;
+            height: 100%;
+            width: 5px;
+            background: linear-gradient(180deg, #28a745, #20c997);
+            border-radius: 5px 0 0 5px;
+        }
+
+        .scanner-title {
+            font-family: 'Jockey One', sans-serif;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .scanner-video-container {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .scan-result-container {
+            text-align: center;
+            margin-top: 15px;
+            height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .user-profile {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 15px;
+        }
+
+        .profile-section {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .profile-picture-container {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #3498db;
+            flex-shrink: 0;
+        }
+
+        .profile-picture {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .no-picture {
+            color: #6c757d;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+
+        .user-name {
+            font-family: 'Jockey One', sans-serif;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+        }
+
+        .user-details p {
+            margin-bottom: 3px;
+            color: #495057;
+            font-size: 0.85rem;
+        }
+
+        .user-details {
+            flex: 1;
+            text-align: left;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+
+        .status-registered {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-unregistered {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .attendance-section {
+            flex: 1;
+            min-height: 180px;
+        }
+
+        .attendance-table-container {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+            padding: 6px 8px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .attendance-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .table-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .recent-scans-section {
+            flex: 0 0 auto;
+            max-height: 90px;
+            overflow-y: auto;
+            padding-top: 10px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .recent-scans-section h5 {
+            font-family: 'Jockey One', sans-serif;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .scanned-user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+            overflow: hidden;
+            font-size: 0.7rem;
+            border: 2px solid #e9ecef;
+        }
+
+        .scanned-user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .scanned-users-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            padding: 5px;
+                }
+
+        .scan-prompt {
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+
+        .scan-prompt i {
+            font-size: 60px;
+            color: #8869BB;
+            margin-bottom: 15px;
+        }
+
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1050;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .card-title {
+            font-family: 'Jockey One', sans-serif;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .top-bar {
+                background-color: rgba(255, 255, 255, 1);
+                padding: 8px 0;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+                border-bottom: 2px solid #3498db;
+            }
+            
+            .header-logo, .header-title {
+                margin-bottom: 5px;
+                height: 60px;
+            }
+            
+            .content-row {
+                flex-direction: column;
+            }
+            
+            .scanner-column, .user-info-card {
+                padding: 15px;
+            }
+            
+            .scanner-video-container {
+                height: 300px;
+            }
+            
+            .nav-link {
+                text-align: center;
+                margin: 4px 0;
+                padding: 8px 12px;
+                font-size: 0.9rem;
+                border: 1px solid rgba(52, 152, 219, 0.3);
+            }
+
+            .profile-section {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .user-details {
+                text-align: center;
+            }
+            
+            .profile-picture-container {
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header-logo {
+                height: 45px;
+            }
+            
+            .header-title {
+                height: 55px;
+            }
+            
+            .scanner-column, .user-info-card {
+                padding: 12px;
+                border-radius: 10px;
+            }
+            
+            .scanner-video-container {
+                height: 250px;
+            }
+            
+            .profile-picture-container {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .notification-container {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg top-bar">
+        <div class="container">
+            <div class="d-flex align-items-center">
+                <img src="img/logo.png" alt="Library Logo" class="header-logo">
+                <img src="img/title.png" alt="Library Title" class="header-title">
+            </div>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="admin-scanner.html">Scanner</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin-about.html">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">Login</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="content-row">
+            <div class="scanner-column">
+                <h2 class="scanner-title">QR CODE SCANNER</h2>
+                <div class="scanner-video-container">
+                    <video id="video" autoplay playsinline></video>
+                </div>
+                <div class="scan-result-container">
+                    <p id="scan-result" class="mb-1">Waiting for QR code...</p>
+                    <p id="scan-details" class="text-muted small"></p>
+                </div>
+            </div>
+            
+            <div class="info-column">
+                <div class="user-info-card">
+                    <h4 class="card-title">USER INFORMATION</h4>
+                    <div id="user-display" class="d-none h-100">
+                        <div class="user-profile">
+                            <div class="profile-section">
+                                <div class="profile-picture-container">
+                                    <img id="profile-picture" class="profile-picture" src="" alt="Profile Picture">
+                                    <div class="no-picture" id="no-picture">No Picture Available</div>
+                                </div>
+                                <div class="user-details">
+                                    <h3 id="user-name" class="user-name"></h3>
+                                    <p id="user-id" class="mb-1"></p>
+                                    <p id="user-department" class="mb-1"></p>
+                                    <p id="user-program" class="mb-2"></p>
+                                    <span id="user-status" class="status"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="attendance-section">
+                                <h5 class="text-center mb-2">Recent Attendance</h5>
+                                <div class="attendance-table-container">
+                                    <div class="table-container">
+                                        <table class="attendance-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Time In</th>
+                                                    <th>Time Out</th>
+                                                    <th>Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="attendance-data">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="recent-scans-section">
+                                <h5 class="text-center">Recently Scanned</h5>
+                                <div class="scanned-users-container" id="scanned-users">
+                                </div>
+                                <p class="text-center text-muted mt-1 small" id="no-recent-scans">No recent scans</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="scan-prompt" class="scan-prompt">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <h3>Scan a QR code to view details</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification-container" id="notification-container">
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const videoElement = document.getElementById('video');
+            const scanResult = document.getElementById('scan-result');
+            const scanDetails = document.getElementById('scan-details');
+            const userDisplay = document.getElementById('user-display');
+            const scanPrompt = document.getElementById('scan-prompt');
+            const scannedUsersContainer = document.getElementById('scanned-users');
+            const noRecentScans = document.getElementById('no-recent-scans');
+            
+            let scanning = true;
+            let scanCooldown = false;
+            let recentScans = [];
+            const MAX_RECENT_SCANS = 5;
+
+            function checkResetScans() {
+                const now = new Date();
+                const resetTime = new Date();
+                resetTime.setHours(18, 0, 0, 0);
+                
+                const lastResetDate = localStorage.getItem('lastResetDate');
+                
+                if (!lastResetDate || (now >= resetTime && new Date(lastResetDate) < resetTime)) {
+                    localStorage.removeItem('recentScans');
+                    localStorage.setItem('lastResetDate', now.toISOString());
+                    return [];
+                }
+                
+                const savedScans = localStorage.getItem('recentScans');
+                return savedScans ? JSON.parse(savedScans) : [];
+            }
+
+            recentScans = checkResetScans();
+            updateRecentScansDisplay();
+
+            async function initializeCamera() {
+                try {
+                    if (!navigator.mediaDevices) {
+                        throw new Error('Media devices not supported');
+                    }
+
+                    const constraints = {
+                        video: { 
+                            facingMode: 'environment'
+                        }
+                    };
+
+                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+                    if (!stream) {
+                        throw new Error('No video stream obtained');
+                    }
+
+                    videoElement.srcObject = stream;
+                    
+                    videoElement.onloadedmetadata = () => {
+                        scanQRCode();
+                    };
+                } catch (error) {
+                    scanResult.textContent = `Camera error: ${error.message}`;
+                    scanResult.style.color = 'red';
+                    showNotification('Camera access denied. Please allow camera access to use the scanner.', 'danger');
+                }
+            }
+
+            function addToRecentScans(memberData, memberType) {
+                const now = new Date();
+                const oneMinuteAgo = new Date(now.getTime() - 60000);
+                
+                const recentScan = recentScans.find(scan => 
+                    scan.id === memberData[memberType + '_number'] && 
+                    new Date(scan.timestamp) > oneMinuteAgo
+                );
+                
+                if (recentScan) {
+                    return false;
+                }
+                
+                recentScans.unshift({
+                    id: memberData[memberType + '_number'],
+                    name: memberData.name,
+                    picture: memberData.picture,
+                    timestamp: now.toISOString(),
+                    type: memberType
+                });
+                
+                if (recentScans.length > MAX_RECENT_SCANS) {
+                    recentScans = recentScans.slice(0, MAX_RECENT_SCANS);
+                }
+                
+                localStorage.setItem('recentScans', JSON.stringify(recentScans));
+                updateRecentScansDisplay();
+                return true;
+            }
+
+            function updateRecentScansDisplay() {
+                scannedUsersContainer.innerHTML = '';
+                
+                if (recentScans.length === 0) {
+                    noRecentScans.classList.remove('d-none');
+                    return;
+                }
+                
+                noRecentScans.classList.add('d-none');
+                
+                recentScans.forEach(scan => {
+                    const avatar = document.createElement('div');
+                    avatar.className = 'scanned-user-avatar';
+                    
+                    if (scan.picture) {
+                        const img = document.createElement('img');
+                        img.src = scan.picture;
+                        img.title = scan.name;
+                        scannedUsersContainer.appendChild(img);
+                    } else {
+                        const initials = scan.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                        avatar.textContent = initials.length > 2 ? initials.substring(0, 2) : initials;
+                        avatar.title = scan.name;
+                        scannedUsersContainer.appendChild(avatar);
+                    }
+                });
+            }
+
+            function displayUserData(memberType, memberData) {
+                userDisplay.classList.remove('d-none');
+                scanPrompt.classList.add('d-none');
+
+                document.getElementById('user-name').textContent = memberData.name;
+                document.getElementById('user-id').textContent = memberData[memberType + '_number'];
+                document.getElementById('user-department').textContent = memberData.department;
+                
+                if (memberType === 'student') {
+                    document.getElementById('user-program').textContent = `${memberData.program} - ${memberData.year_level} (${memberData.block})`;
+                } else if (memberType === 'faculty') {
+                    document.getElementById('user-program').textContent = memberData.program;
+                } else {
+                    document.getElementById('user-program').textContent = memberData.role;
+                }
+
+                const statusElement = document.getElementById('user-status');
+                statusElement.textContent = memberData.registration_status;
+                statusElement.className = 'status ' + 
+                    (memberData.registration_status === 'Registered' ? 'status-registered' : 'status-unregistered');
+
+                const profilePic = document.getElementById('profile-picture');
+                const noPic = document.getElementById('no-picture');
+                
+                if (memberData.picture) {
+                    profilePic.src = memberData.picture;
+                    profilePic.style.display = 'block';
+                    noPic.style.display = 'none';
+                } else {
+                    profilePic.style.display = 'none';
+                    noPic.style.display = 'block';
+                }
+
+                fetchAttendanceRecords(memberType, memberData[memberType + '_number']);
+            }
+
+            function fetchAttendanceRecords(memberType, memberNumber) {
+                $.ajax({
+                    url: 'PHP/fetch_attendance.php',
+                    type: 'POST',
+                    data: {
+                        idNumber: memberNumber,
+                        userType: memberType
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.success) {
+                            const tbody = document.getElementById('attendance-data');
+                            tbody.innerHTML = '';
+
+                            data.attendance.forEach(record => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${record.time_in || '-'}</td>
+                                    <td>${record.time_out || '-'}</td>
+                                    <td>${record.log_date}</td>
+                                `;
+                                tbody.appendChild(row);
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching attendance:", error);
+                    }
+                });
+            }
+
+            function processScan(code) {
+                if (scanCooldown) return;
+                
+                scanCooldown = true;
+                setTimeout(() => { scanCooldown = false; }, 3000);
+                
+                scanResult.textContent = "Scanning...";
+                scanResult.style.color = "black";
+                scanDetails.textContent = "";
+                
+                const formattedDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                const currentDate = new Date().toISOString().split('T')[0];
+                
+                $.ajax({
+                    url: 'PHP/process_scan.php',
+                    type: 'POST',
+                    data: {
+                        qrCode: code,
+                        scanDate: currentDate
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.success) {
+                            const memberType = data.memberType;
+                            const memberData = data.data;
+                            
+                            const isNewScan = addToRecentScans(memberData, memberType);
+                            
+                            if (!isNewScan) {
+                                scanResult.textContent = `${memberType.charAt(0).toUpperCase() + memberType.slice(1)} already scanned`;
+                                scanDetails.textContent = `Please wait 1 minute before scanning again`;
+                                scanDetails.style.color = "orange";
+                                scanResult.style.color = "orange";
+                                
+                                showNotification(`${memberData.name} was already scanned recently. Please wait 1 minute.`, 'warning');
+                                
+                                setTimeout(() => {
+                                    scanResult.textContent = "Waiting for QR code...";
+                                    scanResult.style.color = "black";
+                                    scanDetails.textContent = "";
+                                }, 3000);
+                                return;
+                            }
+                            
+                            const currentTime = new Date();
+                            const formattedTime = currentTime.toLocaleTimeString('en-US', {
+                                hour: 'numeric', 
+                                minute: '2-digit',
+                                hour12: true
+                            });
+                            
+                            scanResult.textContent = `Scanned Successfully: ${memberType.charAt(0).toUpperCase() + memberType.slice(1)}`;
+                            scanDetails.textContent = `ID: ${code} - ${formattedDate} - Time ${data.timeType}: ${formattedTime}`;
+                            scanDetails.style.color = "green";
+                            scanResult.style.color = "green";
+                            
+                            displayUserData(memberType, memberData);
+                            showNotification(`Successfully scanned ${memberData.name}`, 'success');
+                            
+                            setTimeout(() => {
+                                scanResult.textContent = "Waiting for QR code...";
+                                scanResult.style.color = "black";
+                                scanDetails.textContent = "";
+                            }, 2000);
+                        } else {
+                            if (data.memberType) {
+                                const memberType = data.memberType.charAt(0).toUpperCase() + data.memberType.slice(1);
+                                scanResult.textContent = `${memberType} QR Code Not Registered`;
+                                scanDetails.textContent = data.message;
+                            } else {
+                                scanResult.textContent = data.message || "No record found for that QR code";
+                            }
+                            
+                            scanResult.style.color = "red";
+                            showNotification(scanResult.textContent, 'danger');
+                            
+                            setTimeout(() => {
+                                scanResult.textContent = "Waiting for QR code...";
+                                scanResult.style.color = "black";
+                                scanDetails.textContent = "";
+                            }, 3000);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", status, error);
+                        scanResult.textContent = "Server Error";
+                        scanResult.style.color = "red";
+                        scanDetails.textContent = "Please check server logs";
+                        
+                        showNotification('Server error occurred. Please try again.', 'danger');
+                        
+                        setTimeout(() => {
+                            scanResult.textContent = "Waiting for QR code...";
+                            scanResult.style.color = "black";
+                            scanDetails.textContent = "";
+                        }, 2000);
+                    }
+                });
+            }
+
+            function scanQRCode() {
+                if (!scanning) return;
+                
+                if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.width = videoElement.videoWidth;
+                    canvas.height = videoElement.videoHeight;
+                    context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                    
+                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    
+                    if (code && /^\d{8}$/.test(code.data)) {
+                        processScan(code.data);
+                    }
+                }
+                
+                requestAnimationFrame(scanQRCode);
+            }
+
+            function showNotification(message, type) {
+                const notificationContainer = document.getElementById('notification-container');
+                const notificationId = 'notification-' + Date.now();
+                
+                const notification = document.createElement('div');
+                notification.id = notificationId;
+                notification.className = `alert alert-${type} alert-dismissible fade show text-center`;
+                notification.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                
+                notificationContainer.appendChild(notification);
+                
+                setTimeout(() => {
+                    if (document.getElementById(notificationId)) {
+                        const bsAlert = new bootstrap.Alert(notification);
+                        bsAlert.close();
+                    }
+                }, 5000);
+            }
+
+            initializeCamera();
+        });
+    </script>
+</body>
+</html>
